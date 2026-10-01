@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Lovie, Ericha ❤️</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-gradient-start: #ffdde1;
+            --bg-gradient-end: #ee9ca7;
+            --card-bg: #fffbf7;
+            --primary-rose: #d63384;
+            --deep-rose: #a71d5c;
+            --soft-gold: #d4af37;
+            --text-dark: #4a2e35;
+            --text-muted: #7d5a62;
+            --envelope-color: #f7d6e0;
+            --envelope-flap: #f2c4ce;
+            --envelope-shadow: rgba(167, 29, 92, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            font-family: 'Quicksand', sans-serif;
+            overflow-x: hidden;
+            position: relative;
+            padding: 20px;
+        }
+
+        /* Floating particles canvas */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 650px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Audio Control Button */
+        .audio-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(214, 51, 132, 0.3);
+            padding: 10px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--deep-rose);
+            transition: all 0.3s ease;
+        }
+
+        .audio-control:hover {
+            transform: scale(1.05);
+            background: #ffffff;
+            box-shadow: 0 6px 20px rgba(214, 51, 132, 0.2);
+        }
+
+        /* Envelope Interactive Stage */
+        .envelope-wrapper {
+            width: 100%;
+            max-width: 480px;
+            height: 320px;
+            position: relative;
+            cursor: pointer;
+            perspective: 1000px;
+            transition: transform 0.4s ease, opacity 0.4s ease;
+            margin-bottom: 20px;
+        }
+
+        .envelope-wrapper.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.8) translateY(-50px);
+            position: absolute;
+        }
+
+        .envelope {
+            width: 100%;
+            height: 100%;
+            background: var(--envelope-color);
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 15px 35px var(--envelope-shadow);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            overflow: hidden;
+        }
+
+        /* Envelope Flap */
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 240px solid transparent;
+            border-right: 240px solid transparent;
+            border-top: 170px solid var(--envelope-flap);
+            transform-origin: top;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 4;
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
+        }
+
+        .envelope-wrapper:hover .envelope-flap {
+            transform: rotateX(25deg);
+        }
+
+        /* Envelope Pocket Details */
+        .envelope-pocket {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .envelope-pocket::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 240px solid #f8cad6;
+            border-top: 160px solid transparent;
+        }
+
+        .envelope-pocket::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-right: 240px solid #f8cad6;
+            border-top: 160px solid transparent;
+        }
+
+        .envelope-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 240px solid transparent;
+            border-right: 240px solid transparent;
+            border-bottom: 170px solid #f3beca;
+            z-index: 3;
+        }
+
+        /* Wax Seal */
+        .wax-seal {
+            position: absolute;
+            top: 150px;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 65px;
+            height: 65px;
+            background: radial-gradient(circle, #d63384 0%, #90134f 100%);
+            border-radius: 50%;
+            z-index: 5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.4);
+            color: #ffd700;
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.4rem;
+            font-weight: bold;
+            border: 2px dashed rgba(255, 215, 0, 0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .envelope-wrapper:hover .wax-seal {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .click-hint {
+            position: absolute;
+            bottom: -40px;
+            width: 100%;
+            text-align: center;
+            color: var(--deep-rose);
+            font-weight: 600;
+            font-size: 1rem;
+            animation: bounce 1.8s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-8px); }
+            60% { transform: translateY(-4px); }
+        }
+
+        /* Letter Card Container */
+        .letter-card {
+            background: var(--card-bg);
+            width: 100%;
+            padding: 45px 35px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(167, 29, 92, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+            position: relative;
+            opacity: 0;
+            transform: scale(0.9) translateY(40px);
+            pointer-events: none;
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            background-image: radial-gradient(#e5c1cd 0.75px, transparent 0.75px);
+            background-size: 18px 18px;
+        }
+
+        .letter-card.visible {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+        }
+
+        /* Decorative Letter Header Stamp */
+        .stamp-box {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            width: 60px;
+            height: 70px;
+            border: 2px dashed #d63384;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+            transform: rotate(5deg);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            padding: 4px;
+        }
+
+        .stamp-box span {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--deep-rose);
+            font-weight: 700;
+        }
+
+        .stamp-box .stamp-heart {
+            font-size: 1.5rem;
+            margin-top: 2px;
+        }
+
+        .letter-header {
+            margin-bottom: 30px;
+        }
+
+        .recipient-title {
+            font-family: 'Great Vibes', cursive;
+            font-size: 3.2rem;
+            color: var(--deep-rose);
+            line-height: 1.1;
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.8);
+        }
+
+        .sub-greeting {
+            font-family: 'Caveat', cursive;
+            font-size: 1.6rem;
+            color: var(--primary-rose);
+            font-weight: 700;
+        }
+
+        /* Main Message Styling */
+        .letter-body {
+            color: var(--text-dark);
+            font-size: 1.15rem;
+            line-height: 1.85;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .letter-body p {
+            margin-bottom: 18px;
+        }
+
+        .letter-body .highlight-text {
+            background: linear-gradient(120deg, rgba(255, 221, 225, 0.6) 0%, rgba(238, 156, 167, 0.4) 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Signature */
+        .signature-block {
+            margin-top: 35px;
+            text-align: right;
+            padding-right: 10px;
+        }
+
+        .closing-text {
+            font-family: 'Caveat', cursive;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            margin-bottom: -5px;
+        }
+
+        .sender-name {
+            font-family: 'Great Vibes', cursive;
+            font-size: 3rem;
+            color: var(--deep-rose);
+        }
+
+        /* Interactive Action Buttons */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 35px;
+            flex-wrap: wrap;
+        }
+
+        .btn-love {
+            background: linear-gradient(135deg, var(--primary-rose) 0%, var(--deep-rose) 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(167, 29, 92, 0.25);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-love:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 10px 25px rgba(167, 29, 92, 0.35);
+        }
+
+        .btn-love:active {
+            transform: translateY(1px);
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: var(--deep-rose);
+            border: 2px solid var(--primary-rose);
+        }
+
+        .btn-secondary:hover {
+            background: #fff5f7;
+        }
+
+        /* Modal Hug Box */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-card h3 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.2rem;
+            color: var(--deep-rose);
+            margin-bottom: 10px;
+        }
+
+        .modal-card p {
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        /* Spawn Floating Hearts Click Effect */
+        .click-heart {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+            font-size: 24px;
+            animation: floatAndFade 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        @keyframes floatAndFade {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+            }
+            50% {
+                transform: translate(-50%, -100px) scale(1.3) rotate(15deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -180px) scale(1) rotate(-15deg);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 520px) {
+            .letter-card {
+                padding: 30px 20px;
+            }
+            .recipient-title {
+                font-size: 2.6rem;
+            }
+            .sub-greeting {
+                font-size: 1.3rem;
+            }
+            .letter-body {
+                font-size: 1.05rem;
+            }
+            .envelope-wrapper {
+                height: 260px;
+            }
+            .envelope-flap {
+                border-left-width: 180px;
+                border-right-width: 180px;
+                border-top-width: 130px;
+            }
+            .envelope-pocket::before, .envelope-pocket::after {
+                border-left-width: 180px;
+                border-right-width: 180px;
+            }
+            .envelope-bottom {
+                border-left-width: 180px;
+                border-right-width: 180px;
+                border-bottom-width: 130px;
+            }
+            .wax-seal {
+                top: 120px;
+                width: 55px;
+                height: 55px;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Particle Canvas -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Ambient Music Toggle -->
+    <button class="audio-control" id="audioToggle">
+        <span id="audioIcon">🎵</span>
+        <span id="audioText">Play Soft Music</span>
+    </button>
+
+    <div class="main-container">
+        
+        <!-- Interactive Envelope -->
+        <div class="envelope-wrapper" id="envelopeWrapper">
+            <div class="envelope">
+                <div class="envelope-flap" id="envelopeFlap"></div>
+                <div class="envelope-pocket"></div>
+                <div class="envelope-bottom"></div>
+                <div class="wax-seal">K&E</div>
+            </div>
+            <div class="click-hint">✨ Tap to open letter for Ericha ✨</div>
+        </div>
+
+        <!-- Hidden Letter Content (Revealed on Open) -->
+        <div class="letter-card" id="letterCard">
+            <!-- Decorative Postage Stamp -->
+            <div class="stamp-box">
+                <span>AUG 1</span>
+                <span class="stamp-heart">💖</span>
+            </div>
+
+            <div class="letter-header">
+                <h1 class="recipient-title">For Ericha,</h1>
+                <div class="sub-greeting">Hi my lovie uhm i have a short letter for you po...</div>
+            </div>
+
+            <div class="letter-body">
+                <p><strong>Specially happy girlfriends day diay po! 🎉❤️</strong></p>
+
+                <p>Here's my message for you:</p>
+
+                <p>Uhm sorry for being a bad bf for you, and I know na I lack everything... but I was trying, I just don't know where to start.</p>
+
+                <p>Sorry for sometimes I make you feel unseen and treat you based on my mood, and I'm really sorry for what happened yesterday. <span class="highlight-text">I'm sorry for everything po.</span></p>
+
+                <p>Also, thank you for always understanding me. Thank you so much, and you're really important to me. <small style="opacity: 0.75;">(Yun lang po, pasensya sa grammar hehe)</small></p>
+
+                <p>Happy girlfriends day! I hope you enjoy your day. <span class="highlight-text">Limti na tanang problems and always be happy po.</span> I wab youu! 😍🥰💋</p>
+            </div>
+
+            <div class="signature-block">
+                <div class="closing-text">Sincerely yours,</div>
+                <div class="sender-name">Kian</div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-love" id="hugBtn">
+                    <span>🫂</span> Send Virtual Hug
+                </button>
+                <button class="btn-love btn-secondary" id="showerBtn">
+                    <span>💕</span> Heart Shower
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Virtual Hug Modal -->
+    <div class="modal-overlay" id="hugModal">
+        <div class="modal-card">
+            <h3>Sending Big Hugs! 🫂❤️</h3>
+            <p>Consider yourself wrapped in a super tight, warm, and loving hug right now!</p>
+            <p>You mean the world to me, Ericha. Always remember that! ✨</p>
+            <button class="btn-love" style="margin: 0 auto;" id="closeModal">Close with Love</button>
+        </div>
+    </div>
+
+    <script>
+        // Canvas Particle System (Floating Hearts & Sparkles)
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + 20;
+                this.size = Math.random() * 15 + 8;
+                this.speedY = Math.random() * 1.5 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.8;
+                this.opacity = Math.random() * 0.6 + 0.2;
+                this.type = Math.random() > 0.4 ? 'heart' : 'sparkle';
+                this.color = `hsl(${Math.random() * 30 + 330}, 80%, 70%)`;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.02;
+            }
+
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                this.rotation += this.rotSpeed;
+
+                if (this.y < -30) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.globalAlpha = this.opacity;
+
+                if (this.type === 'heart') {
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    const topCurveHeight = this.size * 0.3;
+                    ctx.moveTo(0, topCurveHeight);
+                    // Heart Bezier curves
+                    ctx.bezierCurveTo(0, 0, -this.size / 2, 0
